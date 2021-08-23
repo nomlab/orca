@@ -11,8 +11,8 @@ Execute below command to be able to separate user_namespace with non-root user
 ## Install orca
 ### Linux
 #### Debian or Ubuntu
-1. `$ sudo apt install curl uidmap`
-2. `$ curl -L https://github.com/miyake13000/orca/releases/download/0.1/orca > orca`
+1. `$ sudo apt install uidmap`
+2. `$ curl -L https://github.com/nomlab/orca/releases/latest/download/orca > orca`
 3. `$ chmod +x ./orca`
 
 ## How to use
