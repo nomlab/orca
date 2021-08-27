@@ -26,51 +26,51 @@ impl Args {
             .version(crate_version!())
             .author(crate_authors!())
             .about(crate_description!())
-            .arg(Arg::with_name("name")
+            .arg(Arg::with_name("image")
                  .short("d")
-                 .long("dest")
-                 .help("destribution name of container image")
+                 .long("image")
+                 .help("Image name of container image")
                  .takes_value(true)
                 )
             .arg(Arg::with_name("tag")
                  .short("t")
                  .long("tag")
-                 .help("tag of container iamge")
+                 .help("Tag name of container iamge")
                  .takes_value(true)
                 )
             .arg(Arg::with_name("init")
                  .short("i")
                  .long("init")
-                 .help("initialize contaier environment")
+                 .help("Initialize contaier image before running a command")
                 )
             .arg(Arg::with_name("remove")
                  .short("r")
                  .long("remove")
-                 .help("remove container environment after executing")
+                 .help("Remove container image after running a command")
                 )
-            .arg(Arg::with_name("no_netns")
+            .arg(Arg::with_name("use_netns")
                  .short("n")
-                 .long("no_netns")
-                 .help("dont isolete network namespace")
+                 .long("netns")
+                 .help("Isolate network namespace")
                 )
-            .arg(Arg::with_name("command")
-                 .help("command to execute in conainer")
+            .arg(Arg::with_name("COMMAND")
+                 .help("Command to execute in container")
                 );
 
         let matches = app.get_matches();
 
-        if let Some(o) = matches.value_of("name") {
+        if let Some(o) = matches.value_of("image") {
             self.image_name = Some(o.to_string());
         }
         if let Some(o) = matches.value_of("tag") {
             self.image_tag = Some(o.to_string());
         }
-        if let Some(o) = matches.value_of("command") {
+        if let Some(o) = matches.value_of("COMMAND") {
             self.command = Some(o.to_string());
         }
         self.init_flag     = matches.is_present("init");
         self.remove_flag   = matches.is_present("remove");
-        self.netns_flag = matches.is_present("no_netns");
+        self.netns_flag = matches.is_present("use_netns");
     }
 }
 

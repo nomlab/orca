@@ -5,6 +5,7 @@ use orca::args::Args;
 use orca::image::Image;
 use orca::container::Container;
 use orca::terminal::Terminal;
+use orca::command::Command;
 use dirs::home_dir;
 
 fn main() {
@@ -57,7 +58,13 @@ fn main() {
         args.command.unwrap().to_string(),
         args.netns_flag
     );
-    working_container.map_id(true).unwrap();
+
+    if Command::new("newuidmap", Option::<Vec<String>>::None).is_exist() {
+        working_container.map_id_with_subuid().unwrap();
+    } else {
+        working_container.map_id().unwrap();
+    }
+
     working_container.connect_tty().unwrap();
 
     let mut terminal = Terminal::new();

@@ -1,9 +1,9 @@
 [package]
 name = "orca"
-version = "0.2"
+version = "0.3.1"
 authors = ["miyake13000 <https://github.com/miyake13000/orca>"]
 edition = "2018"
-description = "Container Runtime written by Rust"
+description = "Lightweight Container Management Tool written by Rust"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

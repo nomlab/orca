@@ -3,9 +3,9 @@ mod id;
 
 use std::ffi::{CString, CStr};
 use std::thread;
-use std::fs::File;
-use std::io::{stdout, stdin};
-use std::process::Command;
+use std::fs::{File, OpenOptions};
+use std::io::{stdout, stdin, Write};
+use crate::command::Command;
 use std::os::unix::io::AsRawFd;
 use nix::unistd::{Pid, geteuid};
 use nix::sys::wait::wait;
@@ -52,30 +52,41 @@ impl Container {
         }
     }
 
-    pub fn map_id(&self, subid_flag: bool) -> std::result::Result<(), ()>{
+    pub fn map_id(&self) -> std::result::Result<(), ()> {
+        let mapping_uid = MappingId::new(IdType::UID);
+        let mapping_gid = MappingId::new(IdType::GID);
+
+        let uid_map_path = format!("/proc/{}/uid_map", self.child_pid);
+        let gid_map_path = format!("/proc/{}/gid_map", self.child_pid);
+        let setgroups_path = format!("/proc/{}/setgroups", self.child_pid);
+
+        let mut uid_map_file = OpenOptions::new().append(true).open(&uid_map_path).unwrap();
+        uid_map_file.write_all(&mapping_uid.to_string().into_bytes()).unwrap();
+        let mut setgroups_file = OpenOptions::new().append(true).open(&setgroups_path).unwrap();
+        setgroups_file.write_all(b"deny").unwrap();
+        let mut gid_map_file = OpenOptions::new().append(true).open(&gid_map_path).unwrap();
+        gid_map_file.write_all(&mapping_gid.to_string().into_bytes()).unwrap();
+
+        Ok(())
+    }
+
+    pub fn map_id_with_subuid(&self) -> std::result::Result<(), ()> {
+
         let mut args_uidmap: Vec<String> = vec![self.child_pid.to_string()];
         let mut args_gidmap: Vec<String> = vec![self.child_pid.to_string()];
 
         let mapping_uid = MappingId::new(IdType::UID);
         let mapping_gid = MappingId::new(IdType::GID);
+        let mapping_subuid = MappingId::new(IdType::SUBUID);
+        let mapping_subgid = MappingId::new(IdType::SUBGID);
+
         let _ = args_uidmap.append(&mut mapping_uid.into_vec());
         let _ = args_gidmap.append(&mut mapping_gid.into_vec());
+        let _ = args_uidmap.append(&mut mapping_subuid.into_vec());
+        let _ = args_gidmap.append(&mut mapping_subgid.into_vec());
 
-        if subid_flag {
-            let mapping_subuid = MappingId::new(IdType::SUBUID);
-            let mapping_subgid = MappingId::new(IdType::SUBGID);
-            let _ = args_uidmap.append(&mut mapping_subuid.into_vec());
-            let _ = args_gidmap.append(&mut mapping_subgid.into_vec());
-        }
-
-        let _ = Command::new("newuidmap")
-            .args(&args_uidmap)
-            .output()
-            .unwrap();
-        let _ = Command::new("newgidmap")
-            .args(&args_gidmap)
-            .output()
-            .unwrap();
+        Command::new("newuidmap", Some(args_uidmap)).execute().unwrap();
+        Command::new("newgidmap", Some(args_gidmap)).execute().unwrap();
 
         Ok(())
     }

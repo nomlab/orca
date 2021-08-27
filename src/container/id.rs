@@ -62,6 +62,10 @@ impl MappingId {
         ]
     }
 
+    pub fn to_string(&self) -> String {
+        format!("{} {} {}", self.target_id, self.source_id, self.range)
+    }
+
     fn get_uid() -> (usize, usize) {
         let uid = geteuid().as_raw() as usize;
         let range = 1;
